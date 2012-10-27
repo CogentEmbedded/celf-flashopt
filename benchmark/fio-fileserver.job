@@ -1,0 +1,16 @@
+[global]
+size=${work_set_size}
+direct=0
+directory=${mount_dir}
+nrfiles=${num_files}
+filesize=4096-1048576
+fallocate=none
+thread
+group_reporting
+
+[fileserver]
+numjobs=${num_jobs}
+rw=randrw
+blocksize_range=32:65536
+openfiles=16
+file_service_type=roundrobin

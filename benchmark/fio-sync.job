@@ -1,0 +1,10 @@
+[global]
+rw=${RW}
+size=256m
+direct=1
+bs=${BS}
+runtime=1m
+directory=${mount_dir}
+filename=fio
+
+[job]

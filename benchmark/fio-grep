@@ -1,0 +1,33 @@
+#! /bin/bash -ex
+
+cd `dirname "$0"`
+. fio-common
+
+x_label="Work set to free memory size ratio"
+
+fio_run()
+{
+    for work_set_ratio in ${work_set_ratio_list:-1/2 1 2 4} ; do
+        fio_calc_work_set
+        export mount_dir
+        export min_file_size max_file_size num_files num_jobs work_set_size
+        awk "BEGIN {printf \"%g \", ${work_set_ratio}}"
+        fio --minimal `basename "$0"`.job | fio_filter
+    done
+}
+
+case "$1" in
+    diff)
+        shift
+        fio_diff "$@"
+        ;;
+
+    gdiff)
+        shift
+        fio_gdiff "$@"
+        ;;
+
+    run)
+        fio_run
+        ;;
+esac

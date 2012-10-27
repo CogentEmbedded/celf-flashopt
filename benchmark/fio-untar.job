@@ -1,0 +1,13 @@
+[global]
+size=${work_set_size}
+direct=0
+directory=${mount_dir}
+nrfiles=${num_files}
+filesize=4096-1048576
+fallocate=none
+#create_on_open=1
+thread
+
+[untar]
+rw=write
+file_service_type=sequential

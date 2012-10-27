@@ -1,0 +1,47 @@
+. common
+
+fio_filter()
+{
+    tr ';' ' '
+}
+
+fio_aggregate_filter()
+{
+    tr ';' ' ' | \
+        awk 'BEGIN { read_bw = 0; write_bw = 0; } { read_bw += $7; write_bw += $48; } END { print read_bw, write_bw; }'
+}
+
+fio_calc_work_set()
+{
+    echo 3 > /proc/sys/vm/drop_caches || :
+    free_mem=`free -b | awk '/Mem:/{printf "%.0f", $4 + $6 + $7}'`
+    work_set_size=`awk "BEGIN {printf \"%.0f\", ${free_mem} * ${work_set_ratio}}"`
+    num_files=$(( ${work_set_size} / ( ${min_file_size:=4096} + ${max_file_size:=1048576} ) / 2 / ${num_jobs:=1} ))
+}
+
+fio_aggregate_gdiff()
+{
+    {
+        echo -n 'set logscale ; set grid ; set xtics 2 ; set ytics 2 ; set xlabel "Free memory to work set size ratio" ; '
+        echo -n 'plot '
+        for f in "$@" ; do
+            printf "\"%s\" using 1:2 title \"%s read bandwidth (KB/s)\" with linespoints, " "$1" "$1"
+            printf "\"%s\" using 1:3 title \"%s write bandwidth (KB/s)\" with linespoints" "$1" "$1"
+            shift
+            [ "$#" = 0 ] || echo -n ", "
+        done
+    } | gnuplot -persist -
+}
+
+fio_gdiff()
+{
+    {
+        echo -n "set logscale ; set grid ; set xtics 2 ; set ytics 2 ; set xlabel \"${x_label}\" ; "
+        echo -n 'plot '
+        for f in "$@" ; do
+            echo ${RW} | grep -qv 'read'  || printf "\"%s\" using 1:8 title \"%s read bandwidth (KB/s)\" with linespoints, " "$1" "$1"
+            echo ${RW} | grep -qv 'write' || printf "\"%s\" using 1:49 title \"%s write bandwidth (KB/s)\" with linespoints, " "$1" "$1"
+            shift
+        done
+    } | sed 's/, $//' | gnuplot -persist -
+}

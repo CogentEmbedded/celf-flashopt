@@ -1,0 +1,11 @@
+[global]
+size=${work_set_size}
+direct=0
+thread
+directory=${mount_dir}
+nrfiles=${num_files}
+filesize=4096-1048576
+
+[grep]
+rw=read
+file_service_type=sequential

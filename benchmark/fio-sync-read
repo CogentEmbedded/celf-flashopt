@@ -1,0 +1,30 @@
+#! /bin/bash -ex
+
+cd `dirname "$0"`
+. fio-common
+
+x_label="Block size (bytes)"
+
+fio_run()
+{
+    for BS in 4096 16384 65536 262144 1048576 ; do
+        export BS mount_dir RW
+        echo -n "$BS "
+        fio --minimal fio-sync.job | fio_filter
+    done
+}
+
+case "$1" in
+    diff)
+        shift
+        ;;
+
+    gdiff)
+        shift
+        fio_gdiff "$@"
+        ;;
+
+    run)
+        fio_run
+        ;;
+esac
