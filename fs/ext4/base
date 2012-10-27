@@ -1,0 +1,20 @@
+#! /bin/bash -ex
+
+cd `dirname "$0"`
+. ../common
+
+case "$1" in
+    prepare)
+        ${mkfs} ${mkfs_options} ${device}
+        [ -z "${tunefs_options}" ] || ${tunefs} ${tunefs_options} ${device}
+        mount -o "${mount_options}" ${device} "${mount_dir}"
+        ;;
+
+    cleanup)
+        cleanup
+        ;;
+
+    use)
+        use
+        ;;
+esac

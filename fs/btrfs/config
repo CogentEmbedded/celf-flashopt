@@ -1,0 +1,3 @@
+fstype=btrfs
+mkfs=mkfs.btrfs
+mount_options="${mount_options},nossd"
