@@ -7,24 +7,50 @@ cleanup()
     umount "${mount_dir}"
 }
 
-trap cleanup EXIT
+run()
+{
+    trap cleanup EXIT
 
-for fs_conf in fs/*/* ; do
-    [ -x "${fs_conf}" ] && "${fs_conf}" use || continue
-    echo ${fs_conf}
+    for fs_conf in fs/*/* ; do
+        [ -x "${fs_conf}" ] && "${fs_conf}" use || continue
+        echo ${fs_conf}
 
-    for benchmark in benchmark/* ; do
-        [ -x "${benchmark}" ] || continue
-        echo ${benchmark}
+        for benchmark in benchmark/* ; do
+            [ -x "${benchmark}" ] || continue
+            echo ${benchmark}
 
-        benchmark_name=`basename "${benchmark}"`
-        result=`readlink -m "${result_dir:-result}/${fs_conf}-${benchmark_name}"`
-        [ \! -f "${result}" ] || continue
+            benchmark_name=`basename "${benchmark}"`
+            result=`readlink -m "${result_dir:-result}/${fs_conf}-${benchmark_name}"`
+            [ \! -f "${result}" ] || continue
 
-        "${fs_conf}" prepare
-        mkdir -p `dirname "${result}"`
-        echo 3 > /proc/sys/vm/drop_caches || :
-        time { "${benchmark}" run | tee "${result}" ; }
-        "${fs_conf}" cleanup
+            "${fs_conf}" prepare
+            mkdir -p `dirname "${result}"`
+            echo 3 > /proc/sys/vm/drop_caches || :
+            time { "${benchmark}" run | tee "${result}" ; }
+            "${fs_conf}" cleanup
+        done
     done
-done
+}
+
+gdiff()
+{
+    for fs in fs/*/ ; do
+        for benchmark in benchmark/* ; do
+            [ -x "${benchmark}" ] || continue
+            echo ${benchmark}
+
+            benchmark_name=`basename "${benchmark}"`
+            "${benchmark}" gdiff `echo ${result_dir:-result}/${fs}*-${benchmark_name} | xargs -n1 readlink -f`
+        done
+    done
+}
+
+case "$1" in
+    gdiff)
+        gdiff
+        ;;
+
+    *)
+        run
+        ;;
+esac
