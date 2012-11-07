@@ -5,12 +5,6 @@ fio_filter()
     tr ';' ' '
 }
 
-fio_aggregate_filter()
-{
-    tr ';' ' ' | \
-        awk 'BEGIN { read_bw = 0; write_bw = 0; } { read_bw += $7; write_bw += $48; } END { print read_bw, write_bw; }'
-}
-
 fio_calc_work_set()
 {
     echo 3 > /proc/sys/vm/drop_caches || :
