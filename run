@@ -16,12 +16,12 @@ run()
         echo ${fs_conf}
 
         for benchmark in benchmark/* ; do
-            [ -x "${benchmark}" ] || continue
+            [ ! -x "${benchmark}" ] && continue
             echo ${benchmark}
 
             benchmark_name=`basename "${benchmark}"`
             result=`readlink -m "${result_dir:-result}/${fs_conf}-${benchmark_name}"`
-            [ \! -f "${result}" ] || continue
+            [ -f "${result}" ] && continue
 
             "${fs_conf}" prepare
             mkdir -p `dirname "${result}"`
@@ -36,7 +36,7 @@ gdiff()
 {
     for fs in fs/*/ ; do
         for benchmark in benchmark/* ; do
-            [ -x "${benchmark}" ] || continue
+            [ ! -x "${benchmark}" ] && continue
             echo ${benchmark}
 
             benchmark_name=`basename "${benchmark}"`

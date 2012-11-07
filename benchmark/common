@@ -1,3 +1,5 @@
-[ \! -f ../config ] || . ../config
-[ \! -f config ] || . config
-[ \! -f `basename "$0"`.config ] || . `basename "$0"`.config
+[ -f ../config ]              && . ../config
+[ -f config ]                 && . config
+[ -f `basename "$0"`.config ] && . `basename "$0"`.config
+
+:
