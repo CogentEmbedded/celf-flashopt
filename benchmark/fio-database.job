@@ -5,7 +5,7 @@ directory=${mount_dir}
 #fallocate=none
 #thread
 group_reporting
-numjobs=$ncpus
+numjobs=2
 filename=database
 
 [database]
