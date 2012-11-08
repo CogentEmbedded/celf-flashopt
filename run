@@ -1,4 +1,4 @@
-#! /bin/bash -ex
+#! /bin/bash -e
 
 . config
 
@@ -45,9 +45,30 @@ gdiff()
     done
 }
 
+guess_geometry()
+{
+    flashbench -a "${device}" --blocksize=1024 | \
+        sort -n -k 2 | \
+        awk '/diff/{ diff = $10 + 0;
+                     if ($10 ~ /m/) diff *= 1000000;
+                     if ($10 ~ /µ/) diff *= 1000;
+                     if (prev == 0) prev = diff;
+                     diff2 = diff - prev;
+                     if (diff2 < 0) diff2 = -diff2;
+                     print $2, int(diff2 / diff * 1000);
+                     prev = diff; }' | \
+        sort -n -k 2 -r | head -n 2 | sort -n | \
+        awk 'BEGIN {name[0] = "media_page_size"; name[1] = "media_erase_block_size"; printf "#\n# Guessed media geometry\n#\n"}
+                   {printf "%s=%d\n", name[i++], $1}'
+}
+
 case "$1" in
     gdiff)
         gdiff
+        ;;
+
+    geometry)
+        guess_geometry
         ;;
 
     *)
