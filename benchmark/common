@@ -2,4 +2,9 @@
 [ -f config ]                 && . config
 [ -f `basename "$0"`.config ] && . `basename "$0"`.config
 
+use()
+{
+    echo ${benchmark_exclude} | grep -v -w `basename "$0"`
+}
+
 :

@@ -16,7 +16,7 @@ run()
         echo ${fs_conf}
 
         for benchmark in benchmark/* ; do
-            [ ! -x "${benchmark}" ] && continue
+            [ -x "${benchmark}" ] && "${benchmark}" use || continue
             echo ${benchmark}
 
             benchmark_name=`basename "${benchmark}"`

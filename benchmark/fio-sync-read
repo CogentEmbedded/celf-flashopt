@@ -27,4 +27,8 @@ case "$1" in
     run)
         fio_run
         ;;
+
+    use)
+        use
+        ;;
 esac
