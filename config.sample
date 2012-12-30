@@ -1,0 +1,74 @@
+#
+# Main configuration.
+#
+
+#
+# Device for benchmarking.
+# Note: it will be reformatted.
+#
+device=/dev/mmcblk0p3
+
+#
+# Where the device will be mounted.
+#
+mount_dir=/media/mmcblk0p3
+
+#
+# Where the results will go.
+#
+result_dir=result
+
+#
+# Media page size, bytes.
+# Will be used to tune FS geometry.
+#
+media_page_size=16384
+
+#
+# Media erase block size, bytes.
+# Will be used to tune FS geometry.
+#
+media_erase_block_size=4194304
+
+#
+# Which IO schedulers should not be applied
+#
+iosched_exclude="cfq deadline row"
+
+#
+# Which benchmarks should not be run
+#
+#benchmark_exclude="fio-database fio-fileserver"
+
+#
+# Which FS options to apply to baseline for ext4.
+# Space-separated list of executable script names under fs/ext4.
+#
+#ext4_default="nobarrier noatime"
+
+#
+# Which FS options should not be tried for ext4.
+#
+#ext4_exclude=""
+
+#
+# Which FS options to apply to baseline for btrfs.
+# Space-separated list of executable script names under fs/btrfs.
+#
+#btrfs_default="ssd noatime"
+
+#
+# Which FS options should not be tried for btrfs.
+#
+#btrfs_exclude=""
+
+#
+# Which FS options to apply to baseline for f2fs.
+# Space-separated list of executable script names under fs/f2fs.
+#
+#f2fs_default="noatime"
+
+#
+# Which FS options should not be tried for f2fs.
+#
+#f2fs_exclude=""
