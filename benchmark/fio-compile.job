@@ -9,7 +9,11 @@ fallocate=none
 thread
 group_reporting
 
-[compile]
 numjobs=${num_jobs}
-rw=readwrite
 file_service_type=sequential
+
+[compile_r]
+rw=read
+
+[compile_w]
+rw=write

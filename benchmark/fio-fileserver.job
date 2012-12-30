@@ -8,9 +8,13 @@ fallocate=none
 thread
 group_reporting
 
-[fileserver]
 numjobs=${num_jobs}
-rw=randrw
 blocksize_range=32:65536
 openfiles=16
 file_service_type=roundrobin
+
+[fileserver_r]
+rw=randread
+
+[fileserver_w]
+rw=randwrite
