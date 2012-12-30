@@ -7,27 +7,40 @@ cleanup()
     umount "${mount_dir}"
 }
 
-run()
+run_single()
 {
     trap cleanup EXIT
 
-    for fs_conf in fs/*/* ; do
-        [ -x "${fs_conf}" ] && "${fs_conf}" use || continue
-        echo ${fs_conf}
+    iosched_name=`basename "${iosched}"`
+    benchmark_name=`basename "${benchmark}"`
+    result=`readlink -m "${result_dir:-result}/${fs}-${iosched_name}-${benchmark_name}"`
+    [ -f "${result}" ] && return
 
-        for benchmark in benchmark/* ; do
-            [ -x "${benchmark}" ] && "${benchmark}" use || continue
-            echo ${benchmark}
+    "${fs}" prepare
+    "${iosched}" prepare
+    mkdir -p `dirname "${result}"`
+    echo 3 > /proc/sys/vm/drop_caches || :
+    time { "${benchmark}" run | tee "${result}" ; }
+    "${fs}" cleanup
+}
 
-            benchmark_name=`basename "${benchmark}"`
-            result=`readlink -m "${result_dir:-result}/${fs_conf}-${benchmark_name}"`
-            [ -f "${result}" ] && continue
+run()
+{
 
-            "${fs_conf}" prepare
-            mkdir -p `dirname "${result}"`
-            echo 3 > /proc/sys/vm/drop_caches || :
-            time { "${benchmark}" run | tee "${result}" ; }
-            "${fs_conf}" cleanup
+    for fs in fs/*/* ; do
+        [ -x "${fs}" ] && "${fs}" use || continue
+        echo ${fs}
+
+        for iosched in iosched/* ; do
+            [ -x "${iosched}" ] && "${iosched}" use || continue
+            echo ${iosched}
+
+            for benchmark in benchmark/* ; do
+                [ -x "${benchmark}" ] && "${benchmark}" use || continue
+                echo ${benchmark}
+
+                run_single
+            done
         done
     done
 }
@@ -69,6 +82,10 @@ case "$1" in
 
     geometry)
         guess_geometry
+        ;;
+
+    run_single)
+        run_single
         ;;
 
     *)
