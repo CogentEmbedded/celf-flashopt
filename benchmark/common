@@ -4,7 +4,7 @@
 
 use()
 {
-    echo ${benchmark_exclude} | grep -v -w `basename "$0"`
+    echo ${benchmark_exclude} | grep -q -v -w `basename "$0"`
 }
 
 :

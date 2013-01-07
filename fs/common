@@ -17,7 +17,7 @@ cleanup()
 use()
 {
     exclude=${fstype}_exclude
-    echo ${!default} ${!exclude} | grep -v -w `basename "$0"`
+    echo ${!default} ${!exclude} | grep -q -v -w `basename "$0"`
 }
 
 declare -A log2_table=([1]=0 [2]=1 [4]=2 [8]=3 [16]=4 [32]=5 [64]=6 [128]=7 [256]=8 [512]=9 [1024]=10)

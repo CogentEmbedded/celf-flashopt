@@ -4,7 +4,7 @@
 
 use()
 {
-    echo ${iosched_exclude} | grep -v -w `basename "$0"`
+    echo ${iosched_exclude} | grep -q -v -w `basename "$0"`
 }
 
 :
