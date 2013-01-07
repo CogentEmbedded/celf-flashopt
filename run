@@ -7,13 +7,55 @@ cleanup()
     umount "${mount_dir}"
 }
 
+get_result_name()
+{
+    iosched_name=`basename "${iosched}"`
+    benchmark_name=`basename "${benchmark}"`
+    result=`readlink -m "${result_dir:-result}/${fs}-${iosched_name}-${benchmark_name}"`
+}
+
+analyze()
+{
+    for fs_base in fs/*/ ; do
+        echo `basename "${fs_base}"`
+        for benchmark in benchmark/* ; do
+            [ -x "${benchmark}" ] && "${benchmark}" use || continue
+            echo "  "`basename "${benchmark}"`:
+            for fs in ${fs_base}/* ; do
+                [ -x "${fs}" ] && "${fs}" use || continue
+                fs_name=`basename "${fs}"`
+                for iosched in iosched/* ; do
+                    [ -x "${iosched}" ] && "${iosched}" use || continue
+                    get_result_name
+                    echo -n "    ${fs_name} ${iosched_name} "
+                    "${benchmark}" metric "$1" "${result}"
+                done
+            done | sort -n -k 3 -r | head -n 5
+        done
+
+        echo '  Overall:'
+        for fs in ${fs_base}/* ; do
+            [ -x "${fs}" ] && "${fs}" use || continue
+            fs_name=`basename "${fs}"`
+            for iosched in iosched/* ; do
+                [ -x "${iosched}" ] && "${iosched}" use || continue
+                iosched_name=`basename "${iosched}"`
+                echo -n "    ${fs_name} ${iosched_name} "
+                for benchmark in benchmark/* ; do
+                    [ -x "${benchmark}" ] && "${benchmark}" use || continue
+                    get_result_name
+                    "${benchmark}" metric "$1" "${result}"
+                done | awk '{sum += $1} END {print sum}'
+            done
+        done | sort -n -k 3 -r | head -n 5
+    done
+}
+
 run_single()
 {
     trap cleanup EXIT
 
-    iosched_name=`basename "${iosched}"`
-    benchmark_name=`basename "${benchmark}"`
-    result=`readlink -m "${result_dir:-result}/${fs}-${iosched_name}-${benchmark_name}"`
+    get_result_name
     [ -f "${result}" ] && return
 
     "${fs}" prepare
@@ -76,6 +118,18 @@ guess_geometry()
 }
 
 case "$1" in
+    analyze)
+        shift
+        case "$1" in
+            throughput|latency)
+                analyze "$@"
+                ;;
+            *)
+                exit 1
+                ;;
+        esac
+        ;;
+
     gdiff)
         gdiff
         ;;

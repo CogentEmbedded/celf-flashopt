@@ -24,6 +24,11 @@ case "$1" in
         fio_gdiff "$@"
         ;;
 
+    metric)
+        shift
+        fio_metric "$@"
+        ;;
+
     run)
         fio_run
         ;;

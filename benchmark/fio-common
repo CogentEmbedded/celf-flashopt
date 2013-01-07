@@ -48,3 +48,51 @@ fio_gdiff()
     y_label='bandwidth (KiB/s)' fio_gdiff_show fio_show_bandwidth "$@"
     [ -n "$show_latency" ] && y_label='latency (us)' fio_gdiff_show fio_show_clat "$@" || :
 }
+
+fio_metric_throughput()
+{
+    #
+    # Find average throughput and return it x1000 (for easier sorting later)
+    #
+    cat "$1" | {
+        if [ "${RW}" = "readwrite" ] ; then
+            awk '{ sum += (log($8) + log($49)); n++ } END {printf "%.0f\n", sum * 1000 / n}'
+        elif echo "${RW}" | grep -q read ; then
+            awk '{ sum += log($8); n++ } END {printf "%.0f\n", sum * 1000 / n}'
+        elif echo "${RW}" | grep -q write ; then
+            awk '{ sum += log($49); n++ } END {printf "%.0f\n", sum * 1000 / n}'
+        else
+            echo 0
+        fi
+    }
+}
+
+fio_metric_clat()
+{
+    #
+    # Find maximal of read or write latency and in case it's not zero return
+    # corresponding IOPS number
+    #
+    cat "$1" | {
+        awk '{ if (max < $17 ) max = $17; if (max < $58) max = $58; } END {printf "%.0f\n", max ? 1000000 / max : 0}'
+    }
+}
+
+fio_metric()
+{
+    case "$1" in
+        throughput)
+            shift
+            fio_metric_throughput "$@"
+            ;;
+
+        latency)
+            shift
+            fio_metric_clat "$@"
+            ;;
+
+        *)
+            echo 0
+            ;;
+    esac
+}
