@@ -7,6 +7,9 @@ fio_filter()
 
 fio_calc_work_set()
 {
+    #
+    # Drop caches, calculate free memory size, which is 'free' + 'buffers' + 'cached'
+    #
     echo 3 > /proc/sys/vm/drop_caches || :
     free_mem=`free -b | awk '/Mem:/{printf "%.0f", $4 + $6 + $7}'`
     work_set_size=`awk "BEGIN {printf \"%.0f\", ${free_mem} * ${work_set_ratio}}"`

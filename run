@@ -1,6 +1,13 @@
 #! /bin/bash -e
 
-. config
+. config || {
+    cat << EOF
+There's no config file in the current directory.
+Please create it (see config.sample in the flashopt root directory).
+
+EOF
+    exit 1
+}
 
 cleanup()
 {
@@ -18,6 +25,10 @@ analyze()
 {
     for fs_base in fs/*/ ; do
         echo `basename "${fs_base}"`
+        #
+        # For each file system and benchmark show FS option and IO scheduler
+        # sorted in the descending order of performance metric.
+        #
         for benchmark in benchmark/* ; do
             [ -x "${benchmark}" ] && "${benchmark}" use || continue
             echo "  "`basename "${benchmark}"`:
@@ -33,6 +44,11 @@ analyze()
             done | sort -n -k 3 -r | head -n 5
         done
 
+        #
+        # For each file system show FS option and IO scheduler
+        # sorted in the descending order of aggregated performance metrics
+        # for all workloads.
+        #
         echo '  Overall:'
         for fs in ${fs_base}/* ; do
             [ -x "${fs}" ] && "${fs}" use || continue
@@ -102,6 +118,16 @@ gdiff()
 
 guess_geometry()
 {
+    #
+    # Find block alignments, at which 'diff' is subject to maximal relative growth.
+    # It is assumed that those alignments correspond to media page size (smaller)
+    # and media erase block size (bigger).
+    #
+    # For that run flashbench, find numeric values of printed 'diff' values
+    # (converting milli- and micro- suffix), find relative increase of the 'diff'
+    # value between subsequent alignment values, and print alignment values
+    # corresponding to the two biggest 'diff' relative increases.
+    #
     flashbench -a "${device}" --blocksize=1024 | \
         sort -n -k 2 | \
         awk '/diff/{ diff = $10 + 0;
@@ -117,7 +143,26 @@ guess_geometry()
                    {printf "%s=%d\n", name[i++], $1}'
 }
 
+print_help()
+{
+    cat << EOF
+Usage: run [analyze|gdiff|geometry|help]
+
+        run:            run benchmarks
+        run analyze {throughput|latency}:
+                        suggest FS options/IO schedulers based on measured
+                        performance data to optimize throughput or latency
+        run gdiff:      plot performance data grouped by benchmark
+        run geometry:   run flashbench and suggest medium geometry parameters
+        run help:       this help
+EOF
+}
+
 case "$1" in
+    "")
+        run
+        ;;
+
     analyze)
         shift
         case "$1" in
@@ -125,6 +170,7 @@ case "$1" in
                 analyze "$@"
                 ;;
             *)
+                print_help
                 exit 1
                 ;;
         esac
@@ -143,6 +189,7 @@ case "$1" in
         ;;
 
     *)
-        run
+        print_help
         ;;
+
 esac
